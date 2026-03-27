@@ -1,5 +1,5 @@
 import __init__
-import os, argparse, yaml, numpy as np
+import os, argparse, yaml, numpy as np, shutil
 from torch import multiprocessing as mp
 from examples.classification.train import main as train
 from examples.classification.pretrain import main as pretrain
@@ -14,6 +14,8 @@ if __name__ == "__main__":
     cfg = EasyConfig()
     cfg.load(args.cfg, recursive=True)
     cfg.update(opts)
+    if os.name == 'nt' and cfg.dist_backend == 'nccl':
+        cfg.dist_backend = 'gloo'
     if cfg.seed is None:
         cfg.seed = np.random.randint(1, 10000)
 
@@ -48,7 +50,7 @@ if __name__ == "__main__":
     cfg_path = os.path.join(cfg.run_dir, "cfg.yaml")
     with open(cfg_path, 'w') as f:
         yaml.dump(cfg, f, indent=2)
-        os.system('cp %s %s' % (args.cfg, cfg.run_dir))
+        shutil.copy2(args.cfg, cfg.run_dir)
     cfg.cfg_path = cfg_path
     cfg.wandb.name = cfg.run_name
 

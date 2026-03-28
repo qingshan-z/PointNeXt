@@ -224,7 +224,8 @@ def main(gpu, cfg, profile=False):
 
     if writer is not None:
         writer.close()
-    dist.destroy_process_group()
+    if dist.is_available() and dist.is_initialized():
+        dist.destroy_process_group()
 
 def train_one_epoch(model, train_loader, optimizer, scheduler, epoch, cfg):
     loss_meter = AverageMeter()
